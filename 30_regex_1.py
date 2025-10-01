@@ -1,4 +1,4 @@
-# all these are are ways of flexibly searching for patterns within texts.
+# all these are are ways of flexibly searching for patterns within texts.      
 # in order to use a regular expression in python we use
 # the re library
 import re

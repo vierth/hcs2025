@@ -11,3 +11,6 @@ print(result)
 # {3,}
 # we can also set exact ranges
 # {3, 7} matches 3 to 7 times
+
+# if you want to find a year in a recent (ish) document
+r"\d{4}" # 4000000
