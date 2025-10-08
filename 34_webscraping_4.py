@@ -20,7 +20,9 @@ search_2 = {
         "prop":"linkshere"}
 response = requests.get(api_url, params=search_2, headers=headers)
 data = response.json()
-print(data)
+
+with open('res.txt', 'w',encoding='utf8') as wf:
+    wf.write(str(data))
 
 while "continue" in data:
     search_2.update(data["continue"])
@@ -29,7 +31,11 @@ while "continue" in data:
 
     # get the data
     data = response.json()
-    print(data)
+    
+    with open('res.txt', 'a', encoding='utf8') as af:
+        af.write("\n")
+        af.write(str(data))
+
     next_continue = data["continue"]["continue"]
     # print(data)
     time.sleep(1)
