@@ -10,3 +10,4 @@ links = soup.find_all("a")
 
 for link in links:
     print(link.string, link.get("href"))
+

@@ -6,9 +6,15 @@ from scipy.cluster.hierarchy import linkage, dendrogram
 import matplotlib.pyplot as plt
 from hanziconv import HanziConv
 
+color_dictionary = {"luxun":"magenta", "caoxueqin":"#000000", "zhangdai":"#dedede", "shinaian":"teal"}
+
 
 fnames = []
 texts = []
+titles = []
+authors = []
+centuries = []
+
 
 for root, dirs, files in os.walk('corpus'):
     for filename in files:
@@ -22,6 +28,10 @@ for root, dirs, files in os.walk('corpus'):
 
         texts.append(simplified)
         fnames.append(filename[:-4])
+        labels = filename[:-4].split("_")
+        authors.append(labels[0])
+        titles.append(labels[1])
+        centuries.append(labels[2])
 
 '''
 Some useful parameters for TfidfVector
@@ -50,5 +60,12 @@ simlarities = cosine_similarity(frequencies)
 # calculate the clusters
 linkages = linkage(simlarities, "ward")
 
-dendrogram(linkages, labels=fnames, orientation="right")
+dendrogram(linkages, labels=authors, orientation="right", leaf_font_size=8, leaf_rotation=45)
+
+ax = plt.gca()
+labels = ax.get_ymajorticklabels()
+
+for label in labels:
+    label.set_color(color_dictionary[label.get_text()])
+
 plt.show()
