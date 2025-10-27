@@ -1,3 +1,6 @@
+# be sure to check out
+# https://www.jstor.org/stable/2283270
+
 import os
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -5,12 +8,14 @@ from sklearn.decomposition import PCA
 import pandas as pd
 import seaborn as sns
 import re
+import plotly.express as px
+import plotly.graph_objs as go
 
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 from hanziconv import HanziConv
 
 import matplotlib as mpl
-mpl.rcParams['font.family'] = 'Heiti TC' # for windows SimHei
+mpl.rcParams['pdf.fonttype'] = 42
 
 def chunkify(text, length=10000):
     loops = len(text)//length
@@ -21,14 +26,11 @@ def chunkify(text, length=10000):
 
 def clean(text):
     text = re.sub(r'[a-zA-Z。，、「」！]', '', text)
-
     text = HanziConv.toSimplified(text)
-
     return text
 
-test_division = chunkify("let's divide this up into smaller parts", length=5)
-
-print(test_division)
+def clean_english(text):
+    return text.lower()
 
 color_dictionary = {"luxun":"magenta", "caoxueqin":"#000000", "zhangdai":"cyan", "shinaian":"green"}
 
@@ -42,7 +44,7 @@ centuries = []
 
 
 
-for root, dirs, files in os.walk('corpus'):
+for root, dirs, files in os.walk('fedpapers'):
     for filename in files:
         if filename[0] == ".":
             continue
@@ -50,17 +52,17 @@ for root, dirs, files in os.walk('corpus'):
         with open(os.path.join(root, filename), 'r', encoding='utf8') as rf:
             text = rf.read()
 
-        text = clean(text)
+        text = clean_english(text)
         
-        chunks = chunkify(text)
+        # chunks = chunkify(text)
 
-        for chunk in chunks:
-            texts.append(chunk)
-            fnames.append(filename[:-4])
-            labels = filename[:-4].split("_")
-            authors.append(labels[0])
-            titles.append(labels[1])
-            centuries.append(labels[2])
+        
+        texts.append(text)
+        fnames.append(filename[:-4])
+        labels = filename[:-4].split("_")
+        authors.append(labels[1])
+        titles.append(labels[0])
+
 
 '''
 Some useful parameters for TfidfVector
@@ -70,8 +72,9 @@ ngram_range = (1,1)
 tokenizer = custom functino to tokenize the dcoument
 analyzer = "char" or "word"
 '''
+print(authors,titles)
 
-vectorizer = TfidfVectorizer(use_idf=False, analyzer = "char", max_features = 100)
+vectorizer = TfidfVectorizer(use_idf=False, analyzer = "word", max_features=5)
 
 '''
 vectorizer.fit(texts)
@@ -86,17 +89,26 @@ pca = PCA(n_components=3)
 my_pca = pca.fit_transform(frequencies.toarray())
 loadings = pca.components_
 
+loads_data = {"vocab":[], "x":[], "y":[], "z":[]}
+
+for i, vocab in enumerate(vocabulary):
+    loads_data["vocab"].append(vocab)
+    loads_data["x"].append(loadings[0,i])
+    loads_data["y"].append(loadings[1,i])
+    loads_data["z"].append(loadings[2,i])
+
+ldf = pd.DataFrame(loads_data)
+
 pc_1 = my_pca[:,0]
 pc_2 = my_pca[:,1]
 pc_3 = my_pca[:,2]
 
-data = {"pc1":pc_1, "pc2": pc_2, "pc3": pc_3, "author":authors, "title":titles, "century": centuries}
+data = {"pc1":pc_1, "pc2": pc_2, "pc3": pc_3, "author":authors, "title":titles}
 
 df = pd.DataFrame(data)
 
-sns.scatterplot(df, x="pc1", y="pc2", hue="title")
+fig = px.scatter_3d(df, x="pc1", y="pc2", z="pc3", color="author")
 
-for i, word in enumerate(vocabulary):
-    plt.annotate(word, xy=(loadings[0, i], loadings[1,i]))
+fig.add_trace(go.Scatter3d(x=ldf["x"], y=ldf["y"], z=ldf["z"],mode="text", text=ldf["vocab"]))
 
-plt.show()
+fig.show()
