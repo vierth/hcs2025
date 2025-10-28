@@ -55,7 +55,6 @@ for text in texts:
 
     for sent in sentences:
         words = word_tokenize(sent, method="char")
-        print(words)
         refined_sentences.append(words)
 
 
@@ -63,21 +62,25 @@ vec_model = gensim.models.Word2Vec(sentences=refined_sentences, vector_size=100,
 # vec_model.save("word2vec.model")
 # vec_model = gensim.models.Word2Vec.load('word2vec.model')
 
-words = []
+vocab = []
 vecs = []
 
 for word in vec_model.wv.index_to_key:
-    print(word)
-    words.append(word)
+    vocab.append(word)
     vecs.append(vec_model.wv[word])
+
+
 vecs = np.array(vecs)
-print(vecs)
 
-tsne = TSNE()
+tsne = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3)
 
+#if the following line of code is producing an error, it is likely because
+# of a bug in the threadpoolctl library
+# I fixed it by installing threadpoolctl 3.1.0
+# pip install threadpoolctl==3.1.0
 my_tsne = tsne.fit_transform(vecs)
 
-df = pd.DataFrame({"words":words, "dim_1": my_tsne[:,0], "dim_2":my_tsne[:,1]})
+df = pd.DataFrame({"words":vocab, "dim_1": my_tsne[:,0], "dim_2":my_tsne[:,1]})
 
 fig = px.scatter(df, x="dim_1", y="dim_2", text="words")
 fig.show()
