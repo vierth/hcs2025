@@ -74,3 +74,5 @@ lda = gensim.models.ldamodel.LdaModel(processed_corpus, num_topics=10, id2word=c
 topics = lda.show_topics()
 for topic in topics:
     print(topic)
+
+# plot_topic(3, lda, topn=30)
